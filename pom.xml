@@ -1,0 +1,274 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.alohaeditor</groupId>
+	<artifactId>alohaeditor-cdn</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<properties>
+		<aws.s3.bucket.name>alohaeditor</aws.s3.bucket.name>
+		<aws.access-key>SDFHASDHSDFHSDFHSDFHSDFHSDFHS</aws.access-key>
+		<aws.secret-key>Rfhsdfhsdfhsdfhsdfh/4623t2gfsdfgsdSDG</aws.secret-key>
+	</properties>
+
+	<dependencies>
+		<!-- aws s3 mgmt client -->
+		<dependency>
+			<groupId>net.java.dev.jets3t</groupId>
+			<artifactId>jets3t</artifactId>
+			<version>0.7.2</version>
+		</dependency>
+		<!-- synchronize for s3 client -->
+		<dependency>
+			<groupId>net.java.dev.jets3t</groupId>
+			<artifactId>synchronize</artifactId>
+			<version>0.7.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/aws</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/aws</directory>
+									<filtering>true</filtering>
+									<targetPath>${project.build.directory}/aws</targetPath>
+									<includes>
+										<include>**/*</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<!-- 1. Prepare the aws configuration -->
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<outputDirectory>${project.build.directory}/jets3t</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+					<!-- 2. Download all aloha versions and extract the zipfiles -->
+					<execution>
+						<id>unpack</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+
+								<!-- Aloha Editor CURRENT -->
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.17</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/current</outputDirectory>
+								</artifactItem>
+
+								<!-- Aloha Editor RELEASES -->
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.7</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.7</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.8</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.8</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.9</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.9</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.10</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.10</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.11</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.11</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.12</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.12</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.13</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.13</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.14</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.14</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.15</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.15</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.16</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.16</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.17</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.17</outputDirectory>
+								</artifactItem>
+
+								<!-- Aloha Editor SNAPSHOTS -->
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.21.0-jqueryui-SNAPSHOT</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.0-jqueryui-SNAPSHOT</outputDirectory>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.18-hotfix-SNAPSHOT</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.18-hotfix-SNAPSHOT</outputDirectory>
+								</artifactItem>
+
+							</artifactItems>
+
+							<includes>**/*</includes>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<!-- 3. Rearrange the files for cdn deployment -->
+					<execution>
+						<phase>process-resources</phase>
+						<id>invoke build</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>src/aws/prepare-clean.sh</executable>
+						</configuration>
+					</execution>
+					<!-- 4. Start the synchronization -->
+					<execution>
+						<id>deploy-to-s3</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>src/aws/synchronize.sh</executable>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>archiva.com.gentics.public</id>
+			<name>Gentics Public Repository</name>
+			<url>http://archiva.gentics.com:8081/archiva/repository/com.gentics.public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>archiva.com.gentics.public_snapshots</id>
+			<name>Gentics Public Snapshots Repository</name>
+			<url>http://archiva.gentics.com:8081/archiva/repository/com.gentics.public_snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+</project>
+
+
