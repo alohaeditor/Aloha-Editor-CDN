@@ -10,6 +10,8 @@
 		<aws.s3.bucket.name>alohaeditor</aws.s3.bucket.name>
 		<aws.access-key>SDFHASDHSDFHSDFHSDFHSDFHSDFHS</aws.access-key>
 		<aws.secret-key>Rfhsdfhsdfhsdfhsdfh/4623t2gfsdfgsdSDG</aws.secret-key>
+		<jsdelivr.login>USERNAME</jsdelivr.login>
+		<jsdelivr.password>PASSWORD</jsdelivr.password>
 	</properties>
 
 	<dependencies>
@@ -55,7 +57,60 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<!-- 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>ftp</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<ftp action="delete" server="direct.jsdelivr.com" remotedir="/current"
+									userid="${jsdelivr.login}" password="${jsdelivr.password}"
+									depends="yes" verbose="yes">
+									<fileset>
+										<include name="**" />
+									</fileset>
+								</ftp>
+								<ftp action="rmdir" server="direct.jsdelivr.com" remotedir="/current"
+									userid="${jsdelivr.login}" password="${jsdelivr.password}"
+									depends="yes" verbose="yes">
+									<fileset>
+										<include name="**" />
+									</fileset>
+								</ftp>
+								<ftp action="send" server="direct.jsdelivr.com" remotedir="/"
+									userid="${jsdelivr.login}" password="${jsdelivr.password}"
+									depends="yes" verbose="yes">
+									<fileset dir="${project.build.directory}/cdn">
+										<include name="**/*" />
+									</fileset>
+								</ftp>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>commons-net</groupId>
+						<artifactId>commons-net</artifactId>
+						<version>1.4.1</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.ant</groupId>
+						<artifactId>ant-commons-net</artifactId>
+						<version>1.8.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			-->
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -90,9 +145,19 @@
 								<artifactItem>
 									<groupId>org.alohaeditor</groupId>
 									<artifactId>alohaeditor</artifactId>
-									<version>0.20.17</version>
+									<version>0.21.0</version>
+									<classifier>cdn</classifier>
 									<type>zip</type>
 									<outputDirectory>${project.build.directory}/cdn/current</outputDirectory>
+								</artifactItem>
+								
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.21.0</version>
+									<classifier>cdn</classifier>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/latest</outputDirectory>
 								</artifactItem>
 
 								<!-- Aloha Editor RELEASES -->
@@ -184,23 +249,47 @@
 									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.17</outputDirectory>
 								</artifactItem>
 
-								<!-- Aloha Editor SNAPSHOTS -->
 								<artifactItem>
 									<groupId>org.alohaeditor</groupId>
 									<artifactId>alohaeditor</artifactId>
-									<version>0.21.0-jqueryui-SNAPSHOT</version>
+									<version>0.20.18</version>
 									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.0-jqueryui-SNAPSHOT</outputDirectory>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.18</outputDirectory>
 								</artifactItem>
 
 								<artifactItem>
 									<groupId>org.alohaeditor</groupId>
 									<artifactId>alohaeditor</artifactId>
-									<version>0.20.18-hotfix-SNAPSHOT</version>
+									<version>0.20.19</version>
 									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.18-hotfix-SNAPSHOT</outputDirectory>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.19</outputDirectory>
 								</artifactItem>
 
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<version>0.20.20</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.20</outputDirectory>
+								</artifactItem>
+
+								<!-- 0.21.0 -->
+								<artifactItem>
+									<groupId>org.alohaeditor</groupId>
+									<artifactId>alohaeditor</artifactId>
+									<classifier>cdn</classifier>
+									<version>0.21.0</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.0</outputDirectory>
+								</artifactItem>
+ 								
+								<!-- Aloha Editor SNAPSHOTS <artifactItem> <groupId>org.alohaeditor</groupId> 
+									<artifactId>alohaeditor</artifactId> <version>0.21.0-dev-SNAPSHOT</version> 
+									<type>zip</type> <outputDirectory>${project.build.directory}/cdn/aloha-0.21.0-dev-SNAPSHOT</outputDirectory> 
+									</artifactItem> -->
+								<!-- <artifactItem> <groupId>org.alohaeditor</groupId> <artifactId>alohaeditor</artifactId> 
+									<version>0.20.18-hotfix-SNAPSHOT</version> <type>zip</type> <outputDirectory>${project.build.directory}/cdn/aloha-0.20.18-hotfix-SNAPSHOT</outputDirectory> 
+									</artifactItem> -->
 							</artifactItems>
 
 							<includes>**/*</includes>
