@@ -39,20 +39,15 @@ for dir in `ls` ; do
 done
 
 
-HEADER=$( cat <<EOF
-<!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en"> 
-<head>
-	<title>Aloha Editor - CDN</title>
-</head>
-<body>
-EOF
-)
-echo $HEADER >> index.html
-echo '<ul>' >> index.html
+# remove old index.html file
+rm -f index.html
+TPLDATA="<ul>"
   for dir in `ls` ; do
-    echo "<li>$dir</li>" >> index.html
+    if [ $dir != 'cdn-template.html' ]
+    then
+      TPLDATA="$TPLDATA<li><strong>$dir<\/strong>: <a href=\"\/$dir\/lib\/aloha.js\">aloha.js<\/a> \&middot; <a href=\"\/$dir\/css\/aloha.css\">aloha.css<\/a><\/li>"
+    fi
   done
-echo '</ul>' >> index.html
-echo '</body>' >> index.html
-echo '</html>' >> index.html
+TPLDATA="$TPLDATA<\/ul>"
+
+sed -e "s/<release-template>/$TPLDATA/g" ../../cdn-template.html > index.html
