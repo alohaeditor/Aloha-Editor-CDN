@@ -12,7 +12,7 @@
 		<aws.secret-key>Rfhsdfhsdfhsdfhsdfh/4623t2gfsdfgsdSDG</aws.secret-key>
 		<jsdelivr.login>USERNAME</jsdelivr.login>
 		<jsdelivr.password>PASSWORD</jsdelivr.password>
-		<alohaeditor.current>0.22.6</alohaeditor.current>
+		<alohaeditor.current>0.23.12</alohaeditor.current>
 	</properties>
 
 	<dependencies>
