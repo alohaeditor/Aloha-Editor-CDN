@@ -33,7 +33,7 @@
 			<artifactId>alohaeditor</artifactId>
 			<classifier>cdn</classifier>
 			<type>zip</type>
-			<version>[0.23.0,)</version>
+			<version>[0.24.0,)</version>
 		</dependency>
 	</dependencies>
 
@@ -88,16 +88,16 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.1.1</version>
 				<executions>
-					<!-- Download all releases 
-					<execution> 
-						<phase>generate-sources</phase> 
-						<id>download builds</id> 
+					<!-- Download all releases -->
+					<execution>
+						<phase>generate-sources</phase>
+						<id>download builds</id>
 						<goals>
 							<goal>exec</goal>
-						</goals> 
-						<configuration> 
+						</goals>
+						<configuration>
 							<executable>src/scripts/download-releases.sh</executable>
-						</configuration> 
+						</configuration>
 					</execution>
 					<!-- Rearrange the files for cdn deployment -->
 					<execution>
