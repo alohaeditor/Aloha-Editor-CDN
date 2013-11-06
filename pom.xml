@@ -28,10 +28,34 @@
 			<artifactId>synchronize</artifactId>
 			<version>0.7.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.alohaeditor</groupId>
+			<artifactId>alohaeditor</artifactId>
+			<classifier>cdn</classifier>
+			<type>zip</type>
+			<version>[0.23.0,)</version>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-antrun-plugin</artifactId> 
+				<version>1.7</version> <executions> <execution> <id>ftp</id> <phase>package</phase> 
+				<configuration> <target> <ftp action="delete" server="direct.jsdelivr.com" 
+				remotedir="/current" userid="${jsdelivr.login}" password="${jsdelivr.password}" 
+				depends="yes" verbose="yes"> <fileset> <include name="**" /> </fileset> </ftp> 
+				<ftp action="rmdir" server="direct.jsdelivr.com" remotedir="/current" userid="${jsdelivr.login}" 
+				password="${jsdelivr.password}" depends="yes" verbose="yes"> <fileset> <include 
+				name="**" /> </fileset> </ftp> <ftp action="send" server="direct.jsdelivr.com" 
+				remotedir="/" userid="${jsdelivr.login}" password="${jsdelivr.password}" 
+				depends="yes" verbose="yes"> <fileset dir="${project.build.directory}/cdn"> 
+				<include name="**/*" /> </fileset> </ftp> </target> </configuration> <goals> 
+				<goal>run</goal> </goals> </execution> </executions> <dependencies> <dependency> 
+				<groupId>commons-net</groupId> <artifactId>commons-net</artifactId> <version>1.4.1</version> 
+				</dependency> <dependency> <groupId>org.apache.ant</groupId> <artifactId>ant-commons-net</artifactId> 
+				<version>1.8.1</version> </dependency> </dependencies> </plugin> -->
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -58,26 +82,45 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-antrun-plugin</artifactId> 
-				<version>1.7</version> <executions> <execution> <id>ftp</id> <phase>package</phase> 
-				<configuration> <target> <ftp action="delete" server="direct.jsdelivr.com" 
-				remotedir="/current" userid="${jsdelivr.login}" password="${jsdelivr.password}" 
-				depends="yes" verbose="yes"> <fileset> <include name="**" /> </fileset> </ftp> 
-				<ftp action="rmdir" server="direct.jsdelivr.com" remotedir="/current" userid="${jsdelivr.login}" 
-				password="${jsdelivr.password}" depends="yes" verbose="yes"> <fileset> <include 
-				name="**" /> </fileset> </ftp> <ftp action="send" server="direct.jsdelivr.com" 
-				remotedir="/" userid="${jsdelivr.login}" password="${jsdelivr.password}" 
-				depends="yes" verbose="yes"> <fileset dir="${project.build.directory}/cdn"> 
-				<include name="**/*" /> </fileset> </ftp> </target> </configuration> <goals> 
-				<goal>run</goal> </goals> </execution> </executions> <dependencies> <dependency> 
-				<groupId>commons-net</groupId> <artifactId>commons-net</artifactId> <version>1.4.1</version> 
-				</dependency> <dependency> <groupId>org.apache.ant</groupId> <artifactId>ant-commons-net</artifactId> 
-				<version>1.8.1</version> </dependency> </dependencies> </plugin> -->
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<!-- Download all releases <execution> <phase>generate-sources</phase> 
+						<id>download builds</id> <goals> <goal>exec</goal> </goals> <configuration> 
+						<executable>src/scripts/download-releases.sh</executable> </configuration> 
+						</execution> -->
+					<!-- Rearrange the files for cdn deployment -->
+					<execution>
+						<phase>process-resources</phase>
+						<id>invoke build</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>src/scripts/prepare-clean.sh</executable>
+						</configuration>
+					</execution>
+					<!-- 4. Start the synchronization -->
+					<execution>
+						<id>deploy-to-s3</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>src/aws/synchronize.sh</executable>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.2</version>
+				<version>2.8</version>
 				<executions>
 					<!-- 1. Prepare the aws configuration -->
 					<execution>
@@ -94,354 +137,18 @@
 							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
-					<!-- 2. Download all aloha versions and extract the zipfiles -->
 					<execution>
-						<id>unpack</id>
-						<phase>process-resources</phase>
+						<id>copy-latest</id>
+						<phase>initialize</phase>
 						<goals>
-							<goal>unpack</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<artifactItems>
-
-								<!-- Aloha Editor CURRENT -->
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>${alohaeditor.current}</version>
-									<classifier>cdn</classifier>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/current</outputDirectory>
-								</artifactItem>
-
-								<!-- Alias for current is 'latest' -->
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>${alohaeditor.current}</version>
-									<classifier>cdn</classifier>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/latest</outputDirectory>
-								</artifactItem>
-
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>${alohaeditor.current}</version>
-									<classifier>cdn</classifier>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-${alohaeditor.current}</outputDirectory>
-								</artifactItem>
-
-
-								<!-- Aloha Editor RELEASES -->
-
-								<!-- 0.22.x -->
-
-                                                                <artifactItem>
-                                                                        <groupId>org.alohaeditor</groupId>
-                                                                        <artifactId>alohaeditor</artifactId>
-                                                                        <classifier>cdn</classifier>
-                                                                        <version>0.22.0</version>
-                                                                        <type>zip</type>
-                                                                        <outputDirectory>${project.build.directory}/cdn/aloha-0.22.6</outputDirectory>
-                                                                </artifactItem>
-
-                                                                <artifactItem>
-                                                                        <groupId>org.alohaeditor</groupId>
-                                                                        <artifactId>alohaeditor</artifactId>
-                                                                        <classifier>cdn</classifier>
-                                                                        <version>0.22.0</version>
-                                                                        <type>zip</type>
-                                                                        <outputDirectory>${project.build.directory}/cdn/aloha-0.22.3</outputDirectory>
-                                                                </artifactItem>
-
-                                                                <artifactItem>
-                                                                        <groupId>org.alohaeditor</groupId>
-                                                                        <artifactId>alohaeditor</artifactId>
-                                                                        <classifier>cdn</classifier>
-                                                                        <version>0.22.0</version>
-                                                                        <type>zip</type>
-                                                                        <outputDirectory>${project.build.directory}/cdn/aloha-0.22.2</outputDirectory>
-                                                                </artifactItem>
-
-                                                                <artifactItem>
-                                                                        <groupId>org.alohaeditor</groupId>
-                                                                        <artifactId>alohaeditor</artifactId>
-                                                                        <classifier>cdn</classifier>
-                                                                        <version>0.22.0</version>
-                                                                        <type>zip</type>
-                                                                        <outputDirectory>${project.build.directory}/cdn/aloha-0.22.1</outputDirectory>
-                                                                </artifactItem>
-
-
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<classifier>cdn</classifier>
-									<version>0.22.0</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.22.0</outputDirectory>
-								</artifactItem>
-
-								<!-- 0.21.x -->
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<classifier>cdn</classifier>
-									<version>0.21.4</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.4</outputDirectory>
-								</artifactItem>
-
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<classifier>cdn</classifier>
-									<version>0.21.3</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.3</outputDirectory>
-								</artifactItem>
-
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<classifier>cdn</classifier>
-									<version>0.21.2</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.2</outputDirectory>
-								</artifactItem>
-
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<classifier>cdn</classifier>
-									<version>0.21.1</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.1</outputDirectory>
-								</artifactItem>
-
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<classifier>cdn</classifier>
-									<version>0.21.0</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.21.0</outputDirectory>
-								</artifactItem>
-
-								<!-- 0.20.x -->
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.23</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.23</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.22</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.22</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.21</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.21</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.20</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.20</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.19</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.19</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.18</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.18</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.17</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.17</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.16</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.16</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.15</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.15</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.14</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.14</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.13</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.13</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.12</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.12</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.11</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.11</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.10</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.10</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.9</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.9</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.8</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.8</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.7</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.7</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.6</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.6</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.5</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.5</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.4</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.4</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.3</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.3</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.2</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.2</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.1</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.1</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.alohaeditor</groupId>
-									<artifactId>alohaeditor</artifactId>
-									<version>0.20.0</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/cdn/aloha-0.20.0</outputDirectory>
-								</artifactItem>
-
-								<!-- Aloha Editor SNAPSHOTS <artifactItem> <groupId>org.alohaeditor</groupId> 
-									<artifactId>alohaeditor</artifactId> <version>0.21.0-dev-SNAPSHOT</version> 
-									<type>zip</type> <outputDirectory>${project.build.directory}/cdn/aloha-0.21.0-dev-SNAPSHOT</outputDirectory> 
-									</artifactItem> -->
-								<!-- <artifactItem> <groupId>org.alohaeditor</groupId> <artifactId>alohaeditor</artifactId> 
-									<version>0.20.18-hotfix-SNAPSHOT</version> <type>zip</type> <outputDirectory>${project.build.directory}/cdn/aloha-0.20.18-hotfix-SNAPSHOT</outputDirectory> 
-									</artifactItem> -->
-							</artifactItems>
-
-							<includes>**/*</includes>
+							<includeArtifactIds>alohaeditor</includeArtifactIds>
+							<outputDirectory>${project.build.directory}/downloads/latest</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1.1</version>
-				<executions>
-					<!-- 3. Rearrange the files for cdn deployment -->
-					<execution>
-						<phase>process-resources</phase>
-						<id>invoke build</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>src/aws/prepare-clean.sh</executable>
-						</configuration>
-					</execution>
-					<!-- 4. Start the synchronization -->
-					<execution>
-						<id>deploy-to-s3</id>
-						<phase>package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>src/aws/synchronize.sh</executable>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
 				</executions>
