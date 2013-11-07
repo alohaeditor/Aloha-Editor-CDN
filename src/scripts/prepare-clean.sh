@@ -51,32 +51,20 @@ for dirname in `ls $TMPDIR` ; do
       handleError $? "Could not move aloha files."
       rm -rf $DIR/aloha
       handleError $? "Could not remove empty aloha directory."
-    echo -e "Done.\n"
     echo "Removing demo"
       rm -rf $DIR/demo &> /dev/null
-    echo -e "Done.\n"
     echo "Removing tests"
       rm -rf $DIR/test &> /dev/null
-    echo -e "Done.\n"
   fi
 done
 
 cd $TMPDIR
 
-HEADER=$( cat <<EOF
-<!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en"> 
-<head>
-	<title>Aloha Editor - CDN</title>
-</head>
-<body>
-EOF
-)
-echo $HEADER >> index.html
-echo '<ul>' >> index.html
-  for dirname in `ls $TMPDIR` ; do
-    echo "<li>$dirname</li>" >> index.html
-  done
-echo '</ul>' >> index.html
-echo '</body>' >> index.html
-echo '</html>' >> index.html
+TPLDATA="<ul>"
+for dirname in `ls $TMPDIR | sort -rV` ; do
+  echo "<li>$dir</li>" >> index.html
+  TPLDATA="$TPLDATA<li><strong>$dirname<\/strong>: <a href=\"\/$dirname\/lib\/aloha.js\">aloha.js<\/a> \&middot; <a href=\"\/$dirname\/css\/aloha.css\">aloha.css<\/a><\/li>"
+done
+
+TPLDATA="$TPLDATA<\/ul>"
+sed -e "s/<release-template>/$TPLDATA/g" $BASEDIR/../aws/cdn-template.html > $TMPDIR/index.html

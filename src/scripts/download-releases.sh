@@ -3,6 +3,7 @@
 SCRIPT="`readlink -f $0`" 
 BASEDIR="`dirname "$SCRIPT"`"
 TMPDIR=$BASEDIR/../../target/downloads
+CACHEDIR=/var/tmp/aloha-downloads
 
 # Generic error check and abort method
 function handleError() {
@@ -18,8 +19,20 @@ handleError $? "Could not create tmpdir"
 cd $TMPDIR
 handleError $? "Could not switch to cdn directory"
 
+if [ -e $CACHEDIR ] ; then 
+  rsync -rav $CACHEDIR/* .
+  handleError $? "Could not sync files from cachedir to $TMPDIR"
+else 
+  mkdir -p $CACHEDIR
+fi 
+
 wget -nv --exclude-directories='*/*/*/*/*SNAPSHOT*,*/*/*/*/*beta*,*/*/*/*/*commercial*' -R *source* -r -l5 --no-parent -nc -A zip https://maven.gentics.com/maven2/org/alohaeditor/alohaeditor/
 handleError $? "Error while downloading artifacts"
+
+# Update the cache
+rsync -rav $TMPDIR/maven* $CACHEDIR
+handleError $? "Could not update the cache dir"
+
 mv maven.gentics.com/maven2/org/alohaeditor/alohaeditor/* .
 handleError $? "Error while moving artifacts"
 rm -rf maven.gentics.com
